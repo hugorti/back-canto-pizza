@@ -1,3 +1,5 @@
+const port = process.env.PORT || 3333;
+
 import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 import router from './routes';
@@ -28,7 +30,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 async function startServer() {
     try {
         await seed(); // Executa o seed antes de iniciar o servidor
-        app.listen(3333, () => console.log('Servidor online!'));
+        app.listen(port, () => console.log(`Servidor online na porta ${port}!`));
     } catch (error) {
         console.error("Failed to start the server:", error);
         process.exit(1);
