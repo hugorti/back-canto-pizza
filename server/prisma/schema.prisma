@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(uuid())
+  codusu     Int?      @unique @default(autoincrement())
+  name       String
+  user       String    @unique
+  contact    String?
+  email      String    @unique
+  password   String
+  status     Boolean   @default(true)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  role_id String
+  role    Role   @relation(fields: [role_id], references: [id])
+
+  permission_user    User?   @relation("UserPermission", fields: [permission_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permission_user_id String? // Campo para armazenar o ID do usuário que deu permissão
+
+  users_with_permission User[] @relation("UserPermission")
+
+  @@map("USERS")
+}
+
+model Role {
+  id         String   @id @default(uuid())
+  codrol     Int?     @unique @default(autoincrement())
+  name       String   @unique
+  type       Int
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  created_user String?
+  updated_user String?
+
+  users User[]
+
+  @@map("ROLES")
+}
+
+model Ingredient {
+  id          String    @id @default(uuid())
+  coding      Int?      @unique @default(autoincrement())
+  name        String
+  unit        String // Ex. "kg", "g", "ml"
+  priceUnit   String? // Custo por unidade (ex. R$ por kg)
+  priceTotal  String? // Custo por unidade (ex. R$ por kg)
+  qtdEst      String? // Quantidade disponível em estoque
+  description String? // Nome do fornecedor (opcional)
+  expired_at  DateTime? // Data de validade do ingrediente
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @default(now())
+
+  created_user String?
+  updated_user String?
+
+  // Relacionamento com MovimentacaoEstoque e Receita
+  moviments         Moviment[]
+  requests          RequestItem[]
+  ProductIngredient ProductIngredient[]
+
+  @@unique([name])
+  @@map("INGREDIENTS")
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  codpro     Int?     @unique @default(autoincrement())
+  name       String
+  price      String // Preço de venda ao consumidor
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  created_user String?
+  updated_user String?
+
+  // Relacionamento com Receita e Venda
+  group    Group  @relation(fields: [group_id], references: [id])
+  group_id String
+
+  Sales             Sales[]
+  ProductIngredient ProductIngredient[]
+
+  @@unique([name])
+  @@map("PRODUCTS")
+}
+
+model Group {
+  id         String   @id @default(uuid())
+  codgru     Int?     @unique @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  created_user String?
+  updated_user String?
+
+  // Relacionamentos e chaves estrangeiras
+  products Product[]
+
+  @@unique([name]) // Cada combinação de produto e ingrediente é única
+  @@map("GROUPS")
+}
+
+model ProductIngredient {
+  id            String  @id @default(uuid())
+  codpin        Int?    @unique @default(autoincrement())
+  product_id    String
+  ingredient_id String
+  qtdProd       String?
+
+  product    Product    @relation(fields: [product_id], references: [id])
+  ingredient Ingredient @relation(fields: [ingredient_id], references: [id])
+
+  @@map("PRODUCT_INGREDIENTS")
+}
+
+model Moviment {
+  id          String   @id @default(uuid())
+  codmov      Int?     @unique @default(autoincrement())
+  type        Boolean? //Entrada ou Saida
+  qtdEst      String? // Quantidade adicionada
+  priceUnit   String? // Preço unitário atualizado
+  priceTotal  String? // Quantidade movimentada
+  description String? // Motivo ou descrição do movimento
+  created_at  DateTime @default(now())
+  updated_at  DateTime // Pode manter o `now()` para o updated_at
+
+  created_user String?
+  updated_user String?
+
+  // Relacionamento com Ingrediente
+  ingredient    Ingredient @relation(fields: [ingredient_id], references: [id], onDelete: Cascade)
+  ingredient_id String
+
+  @@map("MOVIMENTS")
+}
+
+model Request {
+  id          String   @id @default(uuid())
+  codreq      Int?     @unique @default(autoincrement())
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  created_user String
+
+  return_request ReturnRequest[]
+  items          RequestItem[] // Relacionamento com os itens
+
+  @@map("REQUESTS")
+}
+
+model RequestItem {
+  id         String   @id @default(uuid())
+  codreqite  Int?     @unique @default(autoincrement())
+  qtdEst     String
+  priceUnit  String
+  priceTotal String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  ingredient    Ingredient @relation(fields: [ingredient_id], references: [id])
+  ingredient_id String
+
+  request        Request         @relation(fields: [request_id], references: [id])
+  request_id     String
+  return_request ReturnRequest[]
+
+  @@map("REQUESTS_ITEMS")
+}
+
+model ReturnRequest {
+  id           String   @id @default(uuid()) // ID único para a devolução
+  codretreq    Int?     @unique @default(autoincrement())
+  qtdEst       String // Quantidade devolvida
+  created_user String? // Usuário que registrou a devolução
+  priceTotal   String?
+  created_at   DateTime @default(now()) // Data de criação da devolução
+  updated_at   DateTime @default(now()) @updatedAt // Data de atualização (quando ocorrer)
+
+  item    RequestItem @relation(fields: [item_id], references: [id])
+  item_id String
+
+  request        Request @relation(fields: [request_codreq], references: [codreq], onDelete: Cascade) // Relacionamento com a requisição
+  request_codreq Int // ID da requisição original (relacionamento com o modelo Request)
+
+  @@map("RETURN_REQUESTS") // Mapeia para a tabela "RETURN_REQUESTS" no banco de dados
+}
+
+model Sales {
+  id         String   @id @default(uuid())
+  codsal     Int?     @unique @default(autoincrement())
+  qtd        Int // Quantidade vendida
+  price      String? // Calculado com base nos ingredientes da receita
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  created_user String?
+  updated_user String?
+
+  // Relacionamento com Produto
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product_id String
+
+  @@map("SALES")
+}

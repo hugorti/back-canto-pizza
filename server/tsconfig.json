@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "typeRoots": ["src/@types"],
+    "strict": false,   
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": false,   // Desabilita as verificações de null
+    "noImplicitAny": false,      // Permite o uso de `any` sem erro
+    "noEmitOnError": false       // Permite emitir mesmo com erros
+  },
+  "include": ["src", "prisma/seed.ts"],
+  "exclude": ["node_modules"]
+}

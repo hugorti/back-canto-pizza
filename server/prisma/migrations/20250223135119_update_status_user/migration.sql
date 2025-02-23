@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "USERS" ADD COLUMN     "status" BOOLEAN NOT NULL DEFAULT true;
