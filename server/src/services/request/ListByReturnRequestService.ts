@@ -27,6 +27,7 @@ class ListByReturnRequestService {
                             select: {
                                 coding: true,
                                 name: true,
+                                priceUnit: true,
                             },
                         },
                     },

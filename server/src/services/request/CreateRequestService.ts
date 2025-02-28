@@ -51,8 +51,12 @@ class CreateRequestService {
                         throw new Error(`Ingrediente com ID ${ingredient_id} não encontrado!`);
                     }
 
-                    // Obter `priceUnit` do ingrediente e calcular `priceTotal`
-                    const priceUnit = parseFloat(ingredient.priceUnit.toString());
+                    // Garantir que `priceUnit` seja tratado como string e convertido corretamente
+                    const priceUnit = parseFloat(String(ingredient.priceUnit).replace(",", "."));
+                    if (isNaN(priceUnit)) {
+                        throw new Error(`O preço unitário do ingrediente ${ingredient_id} não é válido!`);
+                    }
+
                     const priceTotal = requestedQtd * priceUnit;
 
                     // Determina quantas casas decimais o usuário digitou

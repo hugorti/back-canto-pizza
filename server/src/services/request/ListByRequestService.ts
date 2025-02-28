@@ -16,6 +16,7 @@ class ListByRequestService {
                             select: {
                                 coding: true,
                                 name: true,
+                                priceUnit: true,
                             },
                         },
                         return_request: {

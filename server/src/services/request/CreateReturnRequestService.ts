@@ -43,11 +43,7 @@ class CreateReturnRequestService {
       }
 
       const requestedQtd = parseFloat(itemToReturn.qtdEst.replace(",", "."));
-      const priceUnit = parseFloat(itemToReturn.priceUnit.replace(",", "."));
-
-      if (returnQtd > requestedQtd) {
-        throw new Error(`A quantidade devolvida para o item não pode ser maior que a quantidade solicitada!`);
-      }
+      const priceUnit = parseFloat(itemToReturn.priceUnit.toString().replace(",", ".")); // Garantindo que seja tratado como número
 
       // Verificar se já existe uma devolução para este item
       const existingReturnRequest = await prismaClient.returnRequest.findFirst({
@@ -57,52 +53,37 @@ class CreateReturnRequestService {
         },
       });
 
-      // Calcular o valor de devolução
-      const itemReturnPrice = returnQtd * priceUnit;
-      let totalDevolvido = itemReturnPrice;
-      let updatedQtdEst = requestedQtd - returnQtd;
+      // Calcular o total devolvido até o momento (incluindo a nova devolução)
+      const totalDevolvidoAteAgora = existingReturnRequest
+        ? parseFloat(existingReturnRequest.qtdEst.replace(",", ".")) + returnQtd
+        : returnQtd;
 
-      if (existingReturnRequest) {
-        // Se já existir uma devolução para o item, somamos a quantidade devolvida e atualizamos o total
-        const existingQtdDevolvida = parseFloat(existingReturnRequest.qtdEst.replace(",", "."));
-        totalDevolvido += existingQtdDevolvida * priceUnit;  // Soma o valor da devolução existente
-
-        // Atualiza a quantidade restante
-        updatedQtdEst = requestedQtd - (existingQtdDevolvida + returnQtd); 
+      // Verificar se o total devolvido não excede a quantidade solicitada
+      if (totalDevolvidoAteAgora > requestedQtd) {
+        throw new Error(`A quantidade devolvida para o item não pode ser maior que a quantidade solicitada!`);
       }
 
-      // Atualizar o item da requisição
-      await prismaClient.requestItem.update({
-        where: { id: item_id },
-        data: {
-          qtdEst: updatedQtdEst.toFixed(2).replace(".", ","), // Atualiza quantidade restante
-          priceTotal: (updatedQtdEst * priceUnit).toFixed(2).replace(".", ","), // Atualiza valor total
-        },
-      });
-      
-      // Determina quantas casas decimais o usuário digitou
-      const decimalPlaces = qtdEst.includes('.') ? qtdEst.split('.')[1].length : 0;
-      
-      // Criar ou atualizar o registro de devolução
+      // Atualizar o registro de devolução (soma com a devolução anterior)
       const returnRequest = await prismaClient.returnRequest.upsert({
-        where: {
-          id: existingReturnRequest?.id || "", // Se existir, atualiza, senão cria um novo
-        },
+        where: existingReturnRequest ? { id: existingReturnRequest.id } : { id: "" },
         update: {
-          qtdEst: (returnQtd + (existingReturnRequest ? parseFloat(existingReturnRequest.qtdEst.replace(",", ".")) : 0)).toFixed(2).replace(".", ","),
-          priceTotal: totalDevolvido.toFixed(2).replace(".", ","),
+          qtdEst: totalDevolvidoAteAgora.toFixed(2).replace(".", ","), // Soma a nova quantidade com a já existente
+          priceTotal: (totalDevolvidoAteAgora * priceUnit).toFixed(2).replace(".", ","),
         },
         create: {
           request_codreq: request_codreq,  // ID da requisição
           item_id: item_id, // ID do item
-          qtdEst: returnQtd.toFixed(decimalPlaces).replace(".", ","), // Quantidade devolvida
-          priceTotal: itemReturnPrice.toFixed(2).replace(".", ","), // Preço total da devolução
+          qtdEst: returnQtd.toFixed(2).replace(".", ","), // Quantidade devolvida
+          priceTotal: (returnQtd * priceUnit).toFixed(2).replace(".", ","), // Preço total da devolução
           created_user: created_user, // Usuário que criou a devolução
         },
       });
 
       // Armazenar o item de devolução
       returnRequests.push(returnRequest);
+
+      // Calcular a quantidade restante (baseada na quantidade original menos o total devolvido)
+      const updatedQtdEst = requestedQtd - totalDevolvidoAteAgora;
 
       // Armazenar o item atualizado
       updatedItems.push({
