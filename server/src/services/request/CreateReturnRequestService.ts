@@ -63,17 +63,20 @@ class CreateReturnRequestService {
         throw new Error(`A quantidade devolvida para o item não pode ser maior que a quantidade solicitada!`);
       }
 
+      // Determina quantas casas decimais o usuário digitou
+      const decimalPlaces = qtdEst.includes('.') ? qtdEst.split('.')[1].length : 0;
+
       // Atualizar o registro de devolução (soma com a devolução anterior)
       const returnRequest = await prismaClient.returnRequest.upsert({
         where: existingReturnRequest ? { id: existingReturnRequest.id } : { id: "" },
         update: {
-          qtdEst: totalDevolvidoAteAgora.toFixed(2).replace(".", ","), // Soma a nova quantidade com a já existente
+          qtdEst: totalDevolvidoAteAgora.toFixed(decimalPlaces).replace(".", ","), // Soma a nova quantidade com a já existente
           priceTotal: (totalDevolvidoAteAgora * priceUnit).toFixed(2).replace(".", ","),
         },
         create: {
           request_codreq: request_codreq,  // ID da requisição
           item_id: item_id, // ID do item
-          qtdEst: returnQtd.toFixed(2).replace(".", ","), // Quantidade devolvida
+          qtdEst: returnQtd.toFixed(decimalPlaces).replace(".", ","), // Quantidade devolvida
           priceTotal: (returnQtd * priceUnit).toFixed(2).replace(".", ","), // Preço total da devolução
           created_user: created_user, // Usuário que criou a devolução
         },
