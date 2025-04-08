@@ -1,7 +1,7 @@
 import prismaClient from "../../prisma";
 
 interface SalesRequest {
-  qtd: number;
+  qtd: string;
   product_id: string;
   created_user: string | null;
   permission_user_id: string;
@@ -9,8 +9,11 @@ interface SalesRequest {
 
 class CreateSalesService {
   async execute({ qtd, product_id, created_user, permission_user_id }: SalesRequest) {
-    if (!qtd || qtd <= 0) {
-      throw new Error("A quantidade deve ser maior que 0.");
+    // Converter qtd para número
+    const qtdNumber = parseFloat(qtd);
+
+    if (isNaN(qtdNumber) || qtdNumber <= 0) {
+      throw new Error("A quantidade deve ser um número maior que 0.");
     }
 
     const user = await prismaClient.user.findUnique({
@@ -46,19 +49,28 @@ class CreateSalesService {
     const movimentPromises = productIngredients.map(async (productIngredient) => {
       const { ingredient_id, qtdProd } = productIngredient;
 
+      // Garantir que qtdProd seja tratado como número
+      const qtdProdNumber = parseFloat(qtdProd);
+
+      if (isNaN(qtdProdNumber)) {
+        throw new Error(`Quantidade inválida para o ingrediente ${ingredient_id}.`);
+      }
+
       // Calcular a quantidade de ingredientes necessária
-      const totalQtdEst = qtd * qtdProd;
+      const totalQtdEst = qtdNumber * qtdProdNumber;
 
       // Registrar a movimentação de saída para o ingrediente
       const moviment = await prismaClient.moviment.create({
         data: {
           type: false, // Define explicitamente como 'false' para saída
-          qtdEst: totalQtdEst,
+          qtdEst: totalQtdEst.toString(), // Convertendo para string
           description: `Venda do produto ${product.name} (ID: ${product_id})`,
-          ingredient_id, // Associar ao ingrediente correto
+          ingredient: { connect: { id: ingredient_id } }, // Conectar corretamente ao ingrediente
+          updated_at: new Date(),
           created_user,
         },
       });
+      
 
       // Atualizar o estoque do ingrediente, subtraindo a quantidade usada
       const ingredient = await prismaClient.ingredient.findUnique({
@@ -66,13 +78,13 @@ class CreateSalesService {
       });
 
       if (ingredient) {
-        const updatedQtdEst = ingredient.qtdEst - totalQtdEst;
+        const updatedQtdEst = (parseFloat(ingredient.qtdEst) - totalQtdEst).toString();
 
         // Atualizar o estoque do ingrediente com a nova quantidade
         await prismaClient.ingredient.update({
           where: { id: ingredient_id },
           data: {
-            qtdEst: updatedQtdEst, // Subtrai a quantidade do estoque
+            qtdEst: updatedQtdEst, // Convertendo para string
           },
         });
       }

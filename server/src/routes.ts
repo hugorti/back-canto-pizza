@@ -26,6 +26,10 @@ import { ListByReturnRequestController } from './controllers/request/ListByRetur
 import { DetailRequestController } from './controllers/request/DetailRequestService';
 import { ListByProductController } from './controllers/product/ListByProductController';
 import { UpdatedUserPasswordAdminController } from './controllers/user/UpdatedUserPasswordAdminController';
+import { CreateLocationController } from './controllers/location/CreateLocationController';
+import { UpdateLocationController } from './controllers/location/UpdateLocationController';
+import { ListByLocationController } from './controllers/location/ListByLocationController';
+import { RemoveLocationController } from './controllers/location/RemoveLocationController';
 
 const router = Router();
 
@@ -38,7 +42,6 @@ router.put('/update/user', isAuthenticated, isRoleType4, new UpdateUserControlle
 router.get('/users', isAuthenticated, isRoleType4, new ListByUserController().handle);
 
 router.put('/update/password/admin', isAuthenticated, isRoleType4, new UpdatedUserPasswordAdminController().handle);
-
 
 //ROTAS ROLE
 router.get('/roles', isAuthenticated, isRoleType4, new ListByRoleController().handle);
@@ -71,5 +74,10 @@ router.get('/requests', isAuthenticated, isRoleType4, new ListByRequestControlle
 router.get('/requests/return', isAuthenticated, isRoleType4, new ListByReturnRequestController().handle);
 router.get('/request/detail', isAuthenticated, isRoleType4, new DetailRequestController().handle);
 
+//ROTAS LOCATION
+router.post('/location', isAuthenticated, isRoleType4, new CreateLocationController().handle);
+router.put('/update/location', isAuthenticated, isRoleType4, new UpdateLocationController().handle);
+router.get('/locations', isAuthenticated, isRoleType4, new ListByLocationController().handle);
+router.delete('/remove/location', isAuthenticated, isRoleType4, new RemoveLocationController().handle);
 
 export default router;

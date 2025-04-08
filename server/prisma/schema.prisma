@@ -19,8 +19,11 @@ model User {
   created_at DateTime? @default(now())
   updated_at DateTime? @default(now())
 
-  role_id String
   role    Role   @relation(fields: [role_id], references: [id])
+  role_id String
+
+  location    Location? @relation(fields: [location_id], references: [id])
+  location_id String?
 
   permission_user    User?   @relation("UserPermission", fields: [permission_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   permission_user_id String? // Campo para armazenar o ID do usuário que deu permissão
@@ -46,6 +49,22 @@ model Role {
   @@map("ROLES")
 }
 
+model Location {
+  id         String   @id @default(uuid())
+  codloc     Int?     @unique @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  created_user String?
+  updated_user String?
+  Ingredient   Ingredient[]
+  Product      Product[]
+  User         User[]
+
+  @@map("LOCATIONS")
+}
+
 model Ingredient {
   id          String    @id @default(uuid())
   coding      Int?      @unique @default(autoincrement())
@@ -61,6 +80,9 @@ model Ingredient {
 
   created_user String?
   updated_user String?
+
+  location    Location @relation(fields: [location_id], references: [id])
+  location_id String
 
   // Relacionamento com MovimentacaoEstoque e Receita
   moviments         Moviment[]
@@ -81,6 +103,9 @@ model Product {
 
   created_user String?
   updated_user String?
+
+  location    Location @relation(fields: [location_id], references: [id])
+  location_id String
 
   // Relacionamento com Receita e Venda
   group    Group  @relation(fields: [group_id], references: [id])
@@ -199,7 +224,7 @@ model ReturnRequest {
 model Sales {
   id         String   @id @default(uuid())
   codsal     Int?     @unique @default(autoincrement())
-  qtd        Int // Quantidade vendida
+  qtd        String? // Quantidade vendida
   price      String? // Calculado com base nos ingredientes da receita
   created_at DateTime @default(now())
   updated_at DateTime @default(now())

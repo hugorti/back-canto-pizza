@@ -3,7 +3,7 @@ import { CreateIngredientService } from "../../services/ingredient/CreateIngredi
 
 class CreateIngredientController {
     async handle(req: Request, res: Response){
-        const { name, unit, description, expired_at } = req.body;
+        const { name, unit, description, expired_at, location_id } = req.body;
 
         const created_user = req.user_name;
         const permission_user_id = req.user_id;
@@ -16,6 +16,7 @@ class CreateIngredientController {
             description, 
             expired_at,
             created_user,
+            location_id,
             permission_user_id
         })
 

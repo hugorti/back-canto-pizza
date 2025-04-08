@@ -3,7 +3,7 @@ import { CreateProductService } from "../../services/product/CreateProductServic
 
 class CreateProductController {
   async handle(req: Request, res: Response) {
-    const { name, price, group_id, ingredients } = req.body; // Recebe a lista de ingredientes do body
+    const { name, price, group_id, ingredients, location_id } = req.body; // Recebe a lista de ingredientes do body
 
     const created_user = req.user_name; // Recupera o usuário logado
     const permission_user_id = req.user_id; // Recupera o ID do usuário logado
@@ -17,6 +17,7 @@ class CreateProductController {
         group_id,
         ingredients, // Passa a lista de ingredientes ao serviço
         created_user,
+        location_id,
         permission_user_id,
       });
 

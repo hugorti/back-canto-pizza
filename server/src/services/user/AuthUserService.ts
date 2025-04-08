@@ -15,13 +15,15 @@ class AuthUserService {
       where: {
         OR: [
           { email: email },
-          { user: user }
+          { user: { equals: user, mode: "insensitive" } } // Torna a comparação insensível a maiúsculas
         ]
       },
       include: {
-        role: true // Inclui a role para ser verificada
+        role: true
       }
     });
+    
+    
 
     if (!users) {
       throw new Error("User/Password incorrect");

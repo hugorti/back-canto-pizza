@@ -39,11 +39,12 @@ async function seed() {
 
     const users = [
         { 
-            user: 'SUP',
+            user: 'hugo.ti',
             codusu: 0, 
-            name: 'SUP', 
+            name: 'hugo.ti', 
             email: 'sup@domain.com', 
             password: passwordHash, 
+            
             roleType: 0, // Use role type for connection
         },
     ];

@@ -11,6 +11,7 @@ interface ProductRequest {
   created_user: string | null;
   permission_user_id: string;
   group_id: string;
+  location_id: string; // Adicionando o ID do local
   ingredients: IngredientInput[];
 }
 
@@ -21,6 +22,7 @@ class CreateProductService {
     created_user,
     permission_user_id,
     group_id,
+    location_id, // Novo campo
     ingredients,
   }: ProductRequest) {
     if (!name) {
@@ -57,12 +59,22 @@ class CreateProductService {
       throw new Error("Produto já está cadastrado!");
     }
 
-    // Criar o produto e associar ao grupo
+    // Verificar se o local existe
+    const locationExists = await prismaClient.location.findUnique({
+      where: { id: location_id },
+    });
+
+    if (!locationExists) {
+      throw new Error("Local não encontrado!");
+    }
+
+    // Criar o produto e associar ao grupo e local
     const product = await prismaClient.product.create({
       data: {
         name,
         price,
         group: { connect: { id: group_id } }, // Conecta ao grupo existente
+        location: { connect: { id: location_id } }, // Conecta ao local existente
         created_user,
       },
     });
@@ -79,10 +91,11 @@ class CreateProductService {
     }
 
     // Recarregar o produto com as associações e incluir o product_id em cada ingrediente
-    const productWithIngredients = await prismaClient.product.findUnique({
+    const productWithDetails = await prismaClient.product.findUnique({
       where: { id: product.id },
       include: {
         group: { select: { name: true } },
+        location: { select: { name: true } }, // Incluir informações do local
         ProductIngredient: {
           select: {
             qtdProd: true,
@@ -93,7 +106,7 @@ class CreateProductService {
       },
     });
 
-    return productWithIngredients;
+    return productWithDetails;
   }
 }
 
