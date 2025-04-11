@@ -39,9 +39,9 @@ async function seed() {
 
     const users = [
         { 
-            user: 'hugo.ti',
+            user: 'sup',
             codusu: 0, 
-            name: 'hugo.ti', 
+            name: 'SUP', 
             email: 'sup@domain.com', 
             password: passwordHash, 
             

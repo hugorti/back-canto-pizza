@@ -1,11 +1,21 @@
 import prismaClient from "../../prisma";
 
-
 class ListByIngredientsService {
-    async execute(){
-        const role = await prismaClient.ingredient.findMany()
-        return role;
+    async execute() {
+        const ingredients = await prismaClient.ingredient.findMany({
+            include: {
+                location: {
+                    select: {
+                        name: true,
+                    }
+                } // Inclui os dados do local associado
+            },
+            orderBy: {
+                created_at: 'desc' // Ordena por data de criação (opcional)
+            }
+        });
+        return ingredients;
     }
 }
-    
-export { ListByIngredientsService }
+
+export { ListByIngredientsService };

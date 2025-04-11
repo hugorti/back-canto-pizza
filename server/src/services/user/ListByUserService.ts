@@ -17,6 +17,11 @@ class ListByUserService{
                         name: true
                     }
                 },
+                location: {
+                    select: {
+                        name: true,
+                    }
+                },
                 permission_user: {
                     select: {
                         name: true

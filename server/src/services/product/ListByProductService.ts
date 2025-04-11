@@ -5,10 +5,11 @@ class ListByProductsService {
     async execute(){
         const product = await prismaClient.product.findMany({
             include:{
+                location: {
+                    select: { name: true }
+                },
                 group:{
-                    select: {
-                        name: true
-                    }
+                    select: { name: true }
                 },
                 ProductIngredient:{
                     select:{
