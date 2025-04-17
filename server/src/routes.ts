@@ -30,6 +30,8 @@ import { CreateLocationController } from './controllers/location/CreateLocationC
 import { UpdateLocationController } from './controllers/location/UpdateLocationController';
 import { ListByLocationController } from './controllers/location/ListByLocationController';
 import { RemoveLocationController } from './controllers/location/RemoveLocationController';
+import { UpdateGroupController } from './controllers/group/UpdateGroupController';
+import { RemoveGroupController } from './controllers/group/RemoveGroupController';
 
 const router = Router();
 
@@ -54,6 +56,8 @@ router.post('/product/ingredient', isAuthenticated, isRoleType4, new CreateProdu
 //ROTAS GRUPO
 router.post('/group', isAuthenticated, isRoleType4, new CreateGroupController().handle);
 router.get('/groups', isAuthenticated, isRoleType4, new ListByGroupsController().handle);
+router.put('/update/group', isAuthenticated, isRoleType4, new UpdateGroupController().handle);
+router.delete('/remove/group', isAuthenticated, isRoleType4, new RemoveGroupController().handle);
 
 //ROTAS INGREDIENTE
 router.post('/ingredient', isAuthenticated, isRoleType4, new CreateIngredientController().handle);
