@@ -16,8 +16,10 @@ class ListByProductsService {
                         qtdProd: true,
                         ingredient:{
                             select:{
+                                id: true,
                                 coding: true,
-                                name: true
+                                name: true,
+                                unit: true,
                             }
                         }
                     }

@@ -52,6 +52,7 @@ model Role {
 model Location {
   id         String   @id @default(uuid())
   codloc     Int?     @unique @default(autoincrement())
+  status     Boolean   @default(true)
   name       String
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
@@ -68,6 +69,7 @@ model Location {
 model Ingredient {
   id          String    @id @default(uuid())
   coding      Int?      @unique @default(autoincrement())
+  status     Boolean   @default(true)
   name        String
   unit        String // Ex. "kg", "g", "ml"
   priceUnit   String? // Custo por unidade (ex. R$ por kg)
@@ -96,6 +98,7 @@ model Ingredient {
 model Product {
   id         String   @id @default(uuid())
   codpro     Int?     @unique @default(autoincrement())
+  status     Boolean   @default(true)
   name       String
   price      String // Preço de venda ao consumidor
   created_at DateTime @default(now())
@@ -121,6 +124,7 @@ model Product {
 model Group {
   id         String   @id @default(uuid())
   codgru     Int?     @unique @default(autoincrement())
+  status     Boolean   @default(true)
   name       String
   created_at DateTime @default(now())
   updated_at DateTime @default(now())

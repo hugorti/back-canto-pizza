@@ -32,6 +32,8 @@ import { ListByLocationController } from './controllers/location/ListByLocationC
 import { RemoveLocationController } from './controllers/location/RemoveLocationController';
 import { UpdateGroupController } from './controllers/group/UpdateGroupController';
 import { RemoveGroupController } from './controllers/group/RemoveGroupController';
+import { UpdateProductController } from './controllers/product/UpdateProductController';
+import { RemoveProductIngredientController } from './controllers/product_ingredient/RemoveProductIngredientController';
 
 const router = Router();
 
@@ -52,6 +54,8 @@ router.get('/roles', isAuthenticated, isRoleType4, new ListByRoleController().ha
 router.post('/product', isAuthenticated, isRoleType4, new CreateProductController().handle);
 router.get('/products', isAuthenticated, isRoleType4, new ListByProductController().handle);
 router.post('/product/ingredient', isAuthenticated, isRoleType4, new CreateProductIngredientController().handle);
+router.delete('/remove/product/ingredient', isAuthenticated, isRoleType4, new RemoveProductIngredientController().handle);
+router.put('/update/product', isAuthenticated, isRoleType4, new UpdateProductController().handle);
 
 //ROTAS GRUPO
 router.post('/group', isAuthenticated, isRoleType4, new CreateGroupController().handle);
