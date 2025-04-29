@@ -3,7 +3,7 @@ import { UpdateIngredientService } from "../../services/ingredient/UpdateIngredi
 
 class UpdateIngredientController {
   async handle(req: Request, res: Response) {
-    const { ingredient_id, name, unit, description, expired_at } = req.body;
+    const { ingredient_id, name, unit, description, expired_at, location_id } = req.body;
     const updated_user = req.user_name;
     const permission_user_id = req.user_id; // Obtém o ID do usuário autenticado
 
@@ -18,6 +18,7 @@ class UpdateIngredientController {
         expired_at,
         updated_user,
         permission_user_id,
+        location_id,
       });
 
       return res.json(updatedIngredient);
