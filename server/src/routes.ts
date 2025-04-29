@@ -34,6 +34,9 @@ import { UpdateGroupController } from './controllers/group/UpdateGroupController
 import { RemoveGroupController } from './controllers/group/RemoveGroupController';
 import { UpdateProductController } from './controllers/product/UpdateProductController';
 import { RemoveProductIngredientController } from './controllers/product_ingredient/RemoveProductIngredientController';
+import { RemoveProductController } from './controllers/product/RemoveProductController';
+import { RemoveIngredientController } from './controllers/ingredient/RemoveIngredienteController';
+import { UpdateIngredientController } from './controllers/ingredient/UpdateIngredientController';
 
 const router = Router();
 
@@ -56,6 +59,7 @@ router.get('/products', isAuthenticated, isRoleType4, new ListByProductControlle
 router.post('/product/ingredient', isAuthenticated, isRoleType4, new CreateProductIngredientController().handle);
 router.delete('/remove/product/ingredient', isAuthenticated, isRoleType4, new RemoveProductIngredientController().handle);
 router.put('/update/product', isAuthenticated, isRoleType4, new UpdateProductController().handle);
+router.delete('/remove/product', isAuthenticated, isRoleType4, new RemoveProductController().handle);
 
 //ROTAS GRUPO
 router.post('/group', isAuthenticated, isRoleType4, new CreateGroupController().handle);
@@ -66,6 +70,8 @@ router.delete('/remove/group', isAuthenticated, isRoleType4, new RemoveGroupCont
 //ROTAS INGREDIENTE
 router.post('/ingredient', isAuthenticated, isRoleType4, new CreateIngredientController().handle);
 router.get('/ingredients', isAuthenticated, isRoleType4, new ListByIngredientsController().handle);
+router.delete('/remove/ingredient', isAuthenticated, isRoleType4, new RemoveIngredientController().handle);
+router.put('/update/ingredient', isAuthenticated, isRoleType4, new UpdateIngredientController().handle);
 
 //ROTAS VENDAS
 router.post('/sale', isAuthenticated, isRoleType4, new CreateSalesController().handle);

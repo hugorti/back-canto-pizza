@@ -11,7 +11,7 @@ interface ProductRequest {
   created_user: string | null;
   permission_user_id: string;
   group_id: string;
-  location_id: string; // Adicionando o ID do local
+  location_id: string;
   ingredients: IngredientInput[];
 }
 
@@ -22,7 +22,7 @@ class CreateProductService {
     created_user,
     permission_user_id,
     group_id,
-    location_id, // Novo campo
+    location_id,
     ingredients,
   }: ProductRequest) {
     if (!name) {
@@ -50,15 +50,6 @@ class CreateProductService {
       );
     }
 
-    // Verificar se o produto já existe
-    const productExists = await prismaClient.product.findFirst({
-      where: { name },
-    });
-
-    if (productExists) {
-      throw new Error("Produto já está cadastrado!");
-    }
-
     // Verificar se o local existe
     const locationExists = await prismaClient.location.findUnique({
       where: { id: location_id },
@@ -68,39 +59,51 @@ class CreateProductService {
       throw new Error("Local não encontrado!");
     }
 
+    // Verificar se já existe produto com mesmo nome NO MESMO LOCAL
+    const productExistsInLocation = await prismaClient.product.findFirst({
+      where: { 
+        name,
+        location_id 
+      },
+    });
+
+    if (productExistsInLocation) {
+      throw new Error("Já existe um produto com este nome no local selecionado!");
+    }
+
     // Criar o produto e associar ao grupo e local
     const product = await prismaClient.product.create({
       data: {
         name,
         price,
-        group: { connect: { id: group_id } }, // Conecta ao grupo existente
-        location: { connect: { id: location_id } }, // Conecta ao local existente
+        group: { connect: { id: group_id } },
+        location: { connect: { id: location_id } },
         created_user,
       },
     });
 
-    // Associar ingredientes ao produto e incluir o product_id
+    // Associar ingredientes ao produto
     for (const ingredient of ingredients) {
       await prismaClient.productIngredient.create({
         data: {
           product_id: product.id,
           ingredient_id: ingredient.ingredient_id,
-          qtdProd: ingredient.qtdProd.toString(), // Garantir que seja string
+          qtdProd: ingredient.qtdProd.toString(),
         },
       });
     }
 
-    // Recarregar o produto com as associações e incluir o product_id em cada ingrediente
+    // Recarregar o produto com as associações
     const productWithDetails = await prismaClient.product.findUnique({
       where: { id: product.id },
       include: {
         group: { select: { name: true } },
-        location: { select: { name: true } }, // Incluir informações do local
+        location: { select: { name: true } },
         ProductIngredient: {
           select: {
             qtdProd: true,
             ingredient: { select: { id: true, name: true } },
-            product_id: true, // Incluindo product_id nos ingredientes
+            product_id: true,
           },
         },
       },

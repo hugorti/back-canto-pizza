@@ -4,10 +4,10 @@ interface ProductRequest {
   name: string;
   unit: string;
   description?: string;
-  expired_at?: Date;
+  expired_at?: Date | string; // Accept both Date object and ISO string
   created_user: string | null;
   permission_user_id: string;
-  location_id: string; // Novo campo para associar ao local
+  location_id: string;
 }
 
 class CreateIngredientService {
@@ -18,7 +18,7 @@ class CreateIngredientService {
     expired_at,
     created_user,
     permission_user_id,
-    location_id, // Novo parâmetro
+    location_id,
   }: ProductRequest) {
     if (!name) {
       throw new Error("Insira um nome para o ingrediente!");
@@ -28,7 +28,7 @@ class CreateIngredientService {
       throw new Error("O nome do ingrediente deve ter mais de 3 caracteres!");
     }
 
-    // Verificar permissões do usuário
+    // Verify user permissions
     const user = await prismaClient.user.findUnique({
       where: { id: permission_user_id },
       include: { role: true },
@@ -43,16 +43,7 @@ class CreateIngredientService {
       throw new Error("Você não tem permissão! Apenas moderadores e administradores podem criar ingredientes.");
     }
 
-    // Verificar se o nome já existe no banco de dados
-    const ingredientExists = await prismaClient.ingredient.findFirst({
-      where: { name },
-    });
-
-    if (ingredientExists) {
-      throw new Error("Ingrediente já está cadastrado!");
-    }
-
-    // Verificar se o local existe
+    // Verify if location exists
     const locationExists = await prismaClient.location.findUnique({
       where: { id: location_id },
     });
@@ -61,15 +52,38 @@ class CreateIngredientService {
       throw new Error("Local não encontrado!");
     }
 
-    // Criar o ingrediente e associar ao local
+    // Check for duplicate ingredient name in the same location
+    const ingredientExistsInLocation = await prismaClient.ingredient.findFirst({
+      where: { 
+        name,
+        location_id 
+      },
+    });
+
+    if (ingredientExistsInLocation) {
+      throw new Error("Já existe um ingrediente com este nome no local selecionado!");
+    }
+
+    // Handle expired_at conversion if it's a string
+    let expiredAtDate: Date | undefined;
+    if (expired_at) {
+      expiredAtDate = typeof expired_at === 'string' ? new Date(expired_at) : expired_at;
+      
+      // Validate the date
+      if (isNaN(expiredAtDate.getTime())) {
+        throw new Error("Data de validade inválida!");
+      }
+    }
+
+    // Create the ingredient
     const ingredient = await prismaClient.ingredient.create({
       data: {
         name,
         unit,
         description,
-        expired_at,
+        expired_at: expiredAtDate,
         created_user,
-        location: { connect: { id: location_id } }, // Associando ao local
+        location: { connect: { id: location_id } },
       },
     });
 
