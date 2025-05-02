@@ -8,7 +8,8 @@ interface UpdateIngredientRequest {
   expired_at?: Date;
   updated_user: string | null;
   permission_user_id: string;
-  location_id?: string; // ✅ NOVO CAMPO ADICIONADO
+  location_id?: string;
+  status?: boolean; // ✅ NOVO CAMPO ADICIONADO
 }
 
 class UpdateIngredientService {
@@ -20,7 +21,8 @@ class UpdateIngredientService {
     expired_at,
     updated_user,
     permission_user_id,
-    location_id, // ✅ NOVO CAMPO
+    location_id,
+    status, // ✅ NOVO PARÂMETRO
   }: UpdateIngredientRequest) {
     // Verificar se o ingrediente existe
     const ingredient = await prismaClient.ingredient.findUnique({
@@ -57,8 +59,8 @@ class UpdateIngredientService {
       const ingredientExistsInLocation = await prismaClient.ingredient.findFirst({
         where: { 
           name,
-          location_id: location_id ?? ingredient.location_id, // ✅ Verifica usando o novo local (se fornecido)
-          NOT: { id: ingredient_id } // Excluir o próprio ingrediente da verificação
+          location_id: location_id ?? ingredient.location_id,
+          NOT: { id: ingredient_id }
         },
       });
 
@@ -77,7 +79,8 @@ class UpdateIngredientService {
         expired_at: expired_at !== undefined ? new Date(expired_at) : ingredient.expired_at,
         updated_user,
         updated_at: new Date(),
-        location_id: location_id !== undefined ? location_id : ingredient.location_id, // ✅ Atualiza o local
+        location_id: location_id !== undefined ? location_id : ingredient.location_id,
+        status: status !== undefined ? status : ingredient.status, // ✅ Atualiza o status
       },
     });
 
